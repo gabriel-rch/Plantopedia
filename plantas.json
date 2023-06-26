@@ -1,0 +1,47 @@
+[
+ {
+   "id": 1,
+   "nome": "Batata Inglesa",
+   "nome_cientifico": "Solanum tuberosum",
+   "temperatura_minima": 15,
+   "temperatura_maxima": 22,
+   "colheita_minimo": 3,
+   "colheita_maximo": 4
+ },
+ {
+   "id": 2,
+   "nome": "Batata-doce",
+   "nome_cientifico": "Ipomoea batatas",
+   "temperatura_minima": 20,
+   "temperatura_maxima": 30,
+   "colheita_minimo": 3,
+   "colheita_maximo": 5
+ },
+ {
+   "id": 3,
+   "nome": "Tomate",
+   "nome_cientifico": "Solanum lycopersicum",
+   "temperatura_minima": 15,
+   "temperatura_maxima": 28,
+   "colheita_minimo": 3,
+   "colheita_maximo": 4
+ },
+ {
+   "id": 4,
+   "nome": "Cebola",
+   "nome_cientifico": "Allium cepa",
+   "temperatura_minima": 20,
+   "temperatura_maxima": 25,
+   "colheita_minimo": 3,
+   "colheita_maximo": 6
+ },
+ {
+  "id": 5,
+   "nome": "Alface",
+   "nome_cientifico": "Lactuca sativa",
+   "temperatura_minima": 20,
+   "temperatura_maxima": 25,
+   "colheita_minimo": 2,
+   "colheita_maximo": 4
+ }
+]

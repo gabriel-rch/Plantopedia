@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <meta name="author" content="Gabriel Rocha">
+  <link rel="stylesheet" href="style.css">
+  <title>Plantopédia</title>
+  <script>
+    // Garante que o DOM esteja carregado
+    document.addEventListener('DOMContentLoaded', function () {
+      const dialog = document.getElementById('dialog-resultado');
+      const select = document.getElementById('vegetais');
+
+      // Muda o slide do carrossel
+      let currentSlide = 0;
+      function showSlide(slideIndex) {
+        const carouselItems = dialog.querySelectorAll('.carousel-item');
+
+        if (slideIndex < 0) {
+          slideIndex = carouselItems.length - 1;
+        } else if (slideIndex >= carouselItems.length) {
+          slideIndex = 0;
+        }
+
+        const carouselContainer = document.querySelector('.carousel-container');
+        carouselContainer.style.transform = `translateX(-${slideIndex * 100}%)`;
+    
+        const counter = document.querySelector('.carousel-counter');
+        counter.innerText = slideIndex + 1;
+
+        currentSlide = slideIndex;
+      }
+
+      function prevSlide() {
+        showSlide(currentSlide - 1);
+      }
+
+      function nextSlide() {
+        showSlide(currentSlide + 1);
+      }
+
+      // Mostra o resultado do cálculo em um dialog
+      function mostrarResultado(resultados) {
+        while (dialog.firstChild)
+          dialog.removeChild(dialog.firstChild);
+
+        const carousel = document.createElement('div');
+        carousel.className = 'carousel-container';
+
+        const button = document.createElement('button');
+        button.className = 'close-button';
+        button.innerText = 'X';
+        button.addEventListener('click', function () {
+          fecharDialog();
+        });
+
+        const span = document.createElement('span');
+        span.className = 'carousel-control';
+        span.innerText = '❮';
+        span.addEventListener('click', prevSlide);
+
+        const span2 = document.createElement('span');
+        span2.className = 'carousel-control';
+        span2.innerText = '❯';
+        span2.addEventListener('click', nextSlide);
+
+        const counter = document.createElement('span');
+        counter.className = 'carousel-counter';
+        counter.innerText = '1';
+
+        const counterMax = document.createElement('span');
+        counterMax.className = 'carousel-counter';
+        counterMax.innerText = `/${resultados.length}`;
+
+        const divSpan = document.createElement('div');
+        divSpan.className = 'carousel-controls';
+        divSpan.appendChild(span);
+        divSpan.appendChild(counter);
+        divSpan.appendChild(counterMax);
+        divSpan.appendChild(span2);
+
+        resultados.forEach(resultado => {
+          const nome = resultado.nome;
+          const desvio = parseInt(resultado.desvio_temperatura);
+          const plantio = resultado.plantio;
+          const cientifico = resultado.nome_cientifico;
+          const colheitaMinimo = resultado.colheita_minimo;
+          const colheitaMaximo = resultado.colheita_maximo;
+
+          const rating = desvio == 0 ? 'ideais' : desvio < 5 ? 'razoáveis' : 'ruins';
+
+          const divConteudo = document.createElement('div');
+          divConteudo.className = 'dialog-conteudo';
+          divConteudo.innerHTML = `<p>Plante <b>${nome}</b> em <b>${plantio}</b> e colha entre <b>${colheitaMinimo}</b> e <b>${colheitaMaximo}</b>.</p>`;
+
+          const vegetalNome = document.createElement('h2');
+          vegetalNome.className = 'vegetal-nome';
+          vegetalNome.innerText = nome;
+
+          const vegetalCientifico = document.createElement('p');
+          vegetalCientifico.className = 'vegetal-cientifico';
+          vegetalCientifico.innerText = cientifico;
+
+          const vegetalDesvio = document.createElement('p');
+          vegetalDesvio.className = 'vegetal-desvio';
+          vegetalDesvio.innerText = `Condições climáticas ${rating} (Variação de ${desvio}°C)`;
+
+          const divHeader = document.createElement('div');
+          divHeader.className = 'dialog-header';
+          
+          divHeader.appendChild(vegetalNome);
+          divHeader.appendChild(vegetalCientifico);
+          divHeader.appendChild(vegetalDesvio);
+
+          const carouselItem = document.createElement('div');
+          carouselItem.className = 'carousel-item';
+
+          carouselItem.appendChild(divHeader);
+          carouselItem.appendChild(divConteudo);
+
+          carousel.appendChild(carouselItem);
+        });
+
+        dialog.appendChild(carousel);
+        dialog.appendChild(divSpan);
+        dialog.appendChild(button);
+        dialog.showModal();
+      }
+
+      // Preencher o select com os vegetais
+      fetch('/plantas.json')
+        .then(resposta => resposta.json())
+        .then(plantas => {
+          plantas.forEach(planta => {
+            const option = document.createElement('option');
+            option.value = planta.id;
+            option.innerText = planta.nome;
+            select.appendChild(option);
+          });
+        });
+
+      // Calcular o mês de plantio
+      document.getElementById('calcular-mes').addEventListener('click', function () {
+        const vegetal = document.getElementById('vegetais').value;
+        const estado = document.getElementById('estados-calc-mes').value;
+
+        if (vegetal && estado) {
+          fetch(`/calcular/mes?id=${vegetal}&uf=${estado}`)
+            .then(resposta => resposta.json())
+            .then(resultados => {
+              mostrarResultado(resultados);
+            });
+        } else {
+          alert('Preencha todos os campos!');
+        }
+      });
+
+      // Calcular o vegetal para plantio
+      document.getElementById('calcular-vegetal').addEventListener('click', function () {
+        const mes = document.getElementById('meses').value;
+        const estado = document.getElementById('estados-calc-vegetal').value;
+
+        if (mes && estado) {
+          fetch(`/calcular/vegetal?mes=${mes}&uf=${estado}`)
+            .then(resposta => resposta.json())
+            .then(resultados => {
+              mostrarResultado(resultados);
+            });
+        } else {
+          alert('Preencha todos os campos!');
+        }
+      });
+    });
+
+    function fecharDialog() {
+      const dialog = document.getElementById('dialog-resultado');
+      dialog.close();
+    }
+  </script>
+</head>
+
+<body>
+  <section class="snap-section" id="home">
+    <div id="overlay">
+      <div id="home-title">
+        <h1 id="title">Plantopédia</h1>
+        <p id="subtext">Descubra a melhor época para plantar e colher seus vegetais, de acordo com as condições climáticas.</p>
+      </div>
+      <div id="home-buttons">
+        <button class="scroll-button" id="button-quando-plantar"
+          onClick="document.getElementById('section-quando-plantar').scrollIntoView();">Quando Plantar?</button>
+        <button class="scroll-button" id="button-oque-plantar"
+          onClick="document.getElementById('section-oque-plantar').scrollIntoView();">O Que Plantar?</button>
+      </div>
+    </div>
+  </section>
+  <section class="snap-section" id="section-quando-plantar">
+    <div class="section-header">
+      <h1 class="section-title">QUANDO PLANTAR?</h1>
+      <p class="section-text">Escolha o vegetal e o estado para descobrir o melhor mês para plantar.</p>
+    </div>
+    <div class="input-vegetal">
+      <div id="input">
+        <div class="dropdown">
+          <label for="vegetais">Vegetal</label>
+          <select id="vegetais">
+            <option value="">Selecione um vegetal</option>
+          </select>
+        </div>
+
+        <div class="dropdown">
+          <label for="estados">Estado</label>
+          <select id="estados-calc-mes">
+            <option value="">Selecione um estado</option>
+            <option value="AC">Acre</option>
+            <option value="AL">Alagoas</option>
+            <option value="AP">Amapá</option>
+            <option value="AM">Amazonas</option>
+            <option value="BA">Bahia</option>
+            <option value="CE">Ceará</option>
+            <option value="DF">Distrito Federal</option>
+            <option value="ES">Espírito Santo</option>
+            <option value="GO">Goiás</option>
+            <option value="MA">Maranhão</option>
+            <option value="MT">Mato Grosso</option>
+            <option value="MS">Mato Grosso do Sul</option>
+            <option value="MG">Minas Gerais</option>
+            <option value="PA">Pará</option>
+            <option value="PB">Paraíba</option>
+            <option value="PR">Paraná</option>
+            <option value="PE">Pernambuco</option>
+            <option value="PI">Piauí</option>
+            <option value="RJ">Rio de Janeiro</option>
+            <option value="RN">Rio Grande do Norte</option>
+            <option value="RS">Rio Grande do Sul</option>
+            <option value="RO">Rondônia</option>
+            <option value="RR">Roraima</option>
+            <option value="SC">Santa Catarina</option>
+            <option value="SP">São Paulo</option>
+            <option value="SE">Sergipe</option>
+            <option value="TO">Tocantins</option>
+          </select>
+        </div>
+      </div>
+      <button class="input-button" id="calcular-mes">Calcular</button>
+    </div>
+  </section>
+
+  <section class="snap-section" id="section-oque-plantar">
+    <div class="section-header">
+      <h1 class="section-title">O QUE PLANTAR?</h1>
+      <p class="section-text">Escolha o mês e o estado para descobrir os melhores vegetais que podem ser plantados.</p>
+    </div>
+    <div class="input-mes">
+      <div id="input">
+        <div class="dropdown">
+          <label for="meses">Mês</label>
+          <select id="meses">
+            <option value="">Selecione um mês</option>
+            <option value="0">Janeiro</option>
+            <option value="1">Fevereiro</option>
+            <option value="2">Março</option>
+            <option value="3">Abril</option>
+            <option value="4">Maio</option>
+            <option value="5">Junho</option>
+            <option value="6">Julho</option>
+            <option value="7">Agosto</option>
+            <option value="8">Setembro</option>
+            <option value="9">Outubro</option>
+            <option value="10">Novembro</option>
+            <option value="11">Dezembro</option>
+          </select>
+        </div>
+
+        <div class="dropdown">
+          <label for="estados">Estado</label>
+          <select id="estados-calc-vegetal">
+            <option value="">Selecione um estado</option>
+            <option value="AC">Acre</option>
+            <option value="AL">Alagoas</option>
+            <option value="AP">Amapá</option>
+            <option value="AM">Amazonas</option>
+            <option value="BA">Bahia</option>
+            <option value="CE">Ceará</option>
+            <option value="DF">Distrito Federal</option>
+            <option value="ES">Espírito Santo</option>
+            <option value="GO">Goiás</option>
+            <option value="MA">Maranhão</option>
+            <option value="MT">Mato Grosso</option>
+            <option value="MS">Mato Grosso do Sul</option>
+            <option value="MG">Minas Gerais</option>
+            <option value="PA">Pará</option>
+            <option value="PB">Paraíba</option>
+            <option value="PR">Paraná</option>
+            <option value="PE">Pernambuco</option>
+            <option value="PI">Piauí</option>
+            <option value="RJ">Rio de Janeiro</option>
+            <option value="RN">Rio Grande do Norte</option>
+            <option value="RS">Rio Grande do Sul</option>
+            <option value="RO">Rondônia</option>
+            <option value="RR">Roraima</option>
+            <option value="SC">Santa Catarina</option>
+            <option value="SP">São Paulo</option>
+            <option value="SE">Sergipe</option>
+            <option value="TO">Tocantins</option>
+          </select>
+        </div>
+      </div>
+      <button class="input-button" id="calcular-vegetal">Calcular</button>
+    </div>
+  </section>
+
+  <dialog id="dialog-resultado"></dialog>
+</body>
+
+</html>

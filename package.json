@@ -1,0 +1,15 @@
+{
+  "name": "quando-plantar",
+  "version": "1.0.0",
+  "description": "Website dedicado à informações sobre o cultivo de vegetais em diferentes regiões do Brasil",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Gabriel Rocha",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
